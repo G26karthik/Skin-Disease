@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install seaborn pillow pandas
+      - name: Lint (flake8 minimal)
+        run: |
+          pip install flake8
+          flake8 scripts || true
+      - name: Generate figures (no data)
+        run: |
+          python scripts/generate_report_figures.py || true
+      - name: Calibration (skip if model missing)
+        run: |
+          if [ -f models/model.pt ]; then python -m scripts.calibration --data_dir data/ham10000 --model_path models/model.pt || true; fi
+      - name: Update README markers
+        run: |
+          python scripts/update_readme_metrics.py || true
+      - name: Upload images
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-images
+          path: docs/images

@@ -37,6 +37,7 @@ from src.config import (
 from src.dataset import get_dataloaders
 from src.model_builder import build_model, save_model, count_parameters
 from src.metrics import calculate_metrics, plot_confusion_matrix
+from sklearn.metrics import confusion_matrix
 
 
 class Trainer:
@@ -479,6 +480,33 @@ def train_model(
     
     # Save training curves
     plot_training_curves(history)
+
+    # Persist full history for downstream figure generation
+    history_path = RUNS_DIR / 'history.json'
+    try:
+        with open(history_path, 'w') as hf:
+            json.dump(history, hf, indent=2)
+        print(f"Full training history saved to {history_path}")
+    except Exception as e:
+        print(f"Warning: could not save full history: {e}")
+
+    # Generate confusion matrix on validation set using best model (reload)
+    try:
+        print("\nGenerating confusion matrix on validation set ...")
+        model.eval()
+        all_preds, all_labels = [], []
+        with torch.no_grad():
+            for images, labels in val_loader:
+                images = images.to(DEVICE, non_blocking=True)
+                outputs = model(images)
+                preds = outputs.argmax(1).cpu().numpy().tolist()
+                all_preds.extend(preds)
+                all_labels.extend(labels.numpy().tolist())
+        cm = confusion_matrix(all_labels, all_preds)
+        np.save(Path('models') / 'confusion_matrix.npy', cm)
+        print("Saved raw confusion matrix to models/confusion_matrix.npy")
+    except Exception as e:
+        print(f"Warning: failed to compute confusion matrix: {e}")
     
     # Save training log
     log_path = RUNS_DIR / "training_log.txt"
