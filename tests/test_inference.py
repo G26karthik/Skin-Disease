@@ -18,8 +18,8 @@ def test_predict_from_tensor():
     model.eval = Mock()
     model.get_gradcam_target_layer = Mock()
     
-    # Mock model output
-    dummy_logits = torch.randn(1, 3)
+    # Mock model output for 7 classes
+    dummy_logits = torch.randn(1, 7)
     model.return_value = dummy_logits
     
     # Create dummy input
@@ -46,12 +46,12 @@ def test_predict_from_tensor():
     assert isinstance(result['probabilities'], np.ndarray)
     assert isinstance(result['class_probabilities'], dict)
     
-    # Check values
-    assert 0 <= result['class_index'] < 3
+    # Check values for 7 classes
+    assert 0 <= result['class_index'] < 7
     assert result['label'] in CLASS_NAMES
     assert 0.0 <= result['confidence'] <= 1.0
-    assert len(result['probabilities']) == 3
-    assert len(result['class_probabilities']) == 3
+    assert len(result['probabilities']) == 7
+    assert len(result['class_probabilities']) == 7
 
 
 def test_predict_from_array_shape():
@@ -61,8 +61,8 @@ def test_predict_from_array_shape():
     model.eval = Mock()
     model.get_gradcam_target_layer = Mock()
     
-    # Mock model output
-    model.return_value = torch.randn(1, 3)
+    # Mock model output for 7 classes
+    model.return_value = torch.randn(1, 7)
     
     # Test with different image sizes
     for size in [(224, 224, 3), (300, 300, 3), (512, 512, 3)]:
@@ -105,8 +105,8 @@ def test_result_probabilities_sum():
     model.eval = Mock()
     model.get_gradcam_target_layer = Mock()
     
-    # Create realistic softmax output
-    logits = torch.tensor([[1.5, -0.5, 0.2]])
+    # Create realistic softmax output for 7 classes
+    logits = torch.tensor([[1.5, -0.5, 0.2, 0.8, -1.0, 0.5, -0.3]])
     model.return_value = logits
     
     dummy_tensor = torch.randn(1, 3, 224, 224)
@@ -123,11 +123,11 @@ def test_result_probabilities_sum():
 
 
 def test_class_probabilities_dict():
-    """Test that class_probabilities dict has correct structure."""
+    """Test that class_probabilities dict has correct structure for 7 classes."""
     model = Mock()
     model.eval = Mock()
     model.get_gradcam_target_layer = Mock()
-    model.return_value = torch.randn(1, 3)
+    model.return_value = torch.randn(1, 7)
     
     dummy_tensor = torch.randn(1, 3, 224, 224)
     
@@ -137,9 +137,14 @@ def test_class_probabilities_dict():
         generate_gradcam=False
     )
     
+    # Check we have exactly 7 classes
+    assert len(result['class_probabilities']) == 7, \
+        f"Expected 7 classes, got {len(result['class_probabilities'])}"
+    
     # Check all class names present
     for class_name in CLASS_NAMES:
-        assert class_name in result['class_probabilities']
+        assert class_name in result['class_probabilities'], \
+            f"Class {class_name} not in probabilities dict"
         assert isinstance(result['class_probabilities'][class_name], float)
         assert 0.0 <= result['class_probabilities'][class_name] <= 1.0
 

@@ -62,11 +62,21 @@ def test_transform_normalization():
 
 
 def test_class_names():
-    """Test that class names are correctly defined."""
-    assert len(CLASS_NAMES) == 3
-    assert 'Benign' in CLASS_NAMES
-    assert 'Suspicious' in CLASS_NAMES
-    assert 'Urgent' in CLASS_NAMES
+    """Test that class names are correctly defined for HAM10000 7-class system."""
+    assert len(CLASS_NAMES) == 7, f"Expected 7 classes, got {len(CLASS_NAMES)}"
+    
+    # Verify all HAM10000 classes are present
+    expected_classes = [
+        "Actinic_keratoses",
+        "Basal_cell_carcinoma",
+        "Benign_keratosis",
+        "Dermatofibroma",
+        "Melanoma",
+        "Melanocytic_nevi",
+        "Vascular_lesions"
+    ]
+    
+    assert CLASS_NAMES == expected_classes, f"Class names mismatch: {CLASS_NAMES}"
 
 
 def test_image_size():
