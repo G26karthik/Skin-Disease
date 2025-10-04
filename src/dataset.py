@@ -31,7 +31,7 @@ from albumentations.pytorch import ToTensorV2
 from src.config import (
     IMAGE_SIZE, IMAGENET_MEAN, IMAGENET_STD, 
     BATCH_SIZE, NUM_WORKERS, PIN_MEMORY, PREFETCH_FACTOR,
-    TRAIN_SPLIT, VAL_SPLIT, TEST_SPLIT,
+    TRAIN_RATIO, VAL_RATIO, TEST_RATIO,
     AUGMENTATION_CONFIG, CLASS_NAMES, SEED
 )
 
@@ -183,7 +183,7 @@ def get_train_transforms() -> A.Compose:
             p=0.5
         ),
         A.RandomResizedCrop(
-            IMAGE_SIZE, IMAGE_SIZE,
+            size=(IMAGE_SIZE, IMAGE_SIZE),
             scale=AUGMENTATION_CONFIG["crop_scale"],
             p=0.5
         ),
@@ -222,9 +222,9 @@ def get_val_transforms() -> A.Compose:
 
 def create_split_from_single_folder(
     data_dir: str,
-    train_ratio: float = TRAIN_SPLIT,
-    val_ratio: float = VAL_SPLIT,
-    test_ratio: float = TEST_SPLIT,
+    train_ratio: float = TRAIN_RATIO,
+    val_ratio: float = VAL_RATIO,
+    test_ratio: float = TEST_RATIO,
     seed: int = SEED
 ) -> Tuple[Dataset, Dataset, Dataset]:
     """
@@ -232,9 +232,9 @@ def create_split_from_single_folder(
     
     Args:
         data_dir: Directory containing class subdirectories
-        train_ratio: Proportion for training (default 0.8)
-        val_ratio: Proportion for validation (default 0.1)
-        test_ratio: Proportion for testing (default 0.1)
+        train_ratio: Proportion for training (default 0.70)
+        val_ratio: Proportion for validation (default 0.15)
+        test_ratio: Proportion for testing (default 0.15)
         seed: Random seed for reproducibility
         
     Returns:

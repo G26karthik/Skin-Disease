@@ -1,10 +1,11 @@
 # 🔬 AI-Powered Skin Lesion Classifier with Explainable AI
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.2.0-red.svg)](https://pytorch.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.7.1-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Dataset](https://img.shields.io/badge/Dataset-HAM10000-green.svg)](https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000)
 
-A production-quality deep learning system for classifying skin lesions with explainable AI (Grad-CAM) visualization. Built with PyTorch, EfficientNet_B0, and optimized for NVIDIA GPUs with mixed precision training.
+A production-quality deep learning system for classifying skin lesions using the **HAM10000 dataset** (10,015 dermatoscopic images across 7 diagnostic categories). Features explainable AI (Grad-CAM) visualization, PyTorch/EfficientNet_B0 architecture, and GPU-accelerated mixed precision training.
 
 **⚠️ MEDICAL DISCLAIMER**: This tool is for educational and research purposes only. It is NOT a substitute for professional medical diagnosis. Always consult a qualified dermatologist or healthcare provider.
 
@@ -12,9 +13,17 @@ A production-quality deep learning system for classifying skin lesions with expl
 
 ## 🎯 Features
 
-- **Transfer Learning**: EfficientNet_B0 pretrained on ImageNet, fine-tuned for skin lesion classification
+- **HAM10000 Dataset**: 10,015 dermatoscopic images across 7 skin lesion types
+  - Melanocytic nevi (nv) - benign moles
+  - Melanoma (mel) - malignant
+  - Benign keratosis (bkl) - benign
+  - Basal cell carcinoma (bcc) - malignant
+  - Actinic keratoses (akiec) - pre-cancerous
+  - Vascular lesions (vasc) - benign
+  - Dermatofibroma (df) - benign
+- **Transfer Learning**: EfficientNet_B0 pretrained on ImageNet, fine-tuned for dermatoscopic classification
 - **Explainable AI**: Grad-CAM heatmaps showing model attention regions
-- **GPU Optimized**: Mixed precision training (AMP) for 2-3x speedup on NVIDIA GPUs
+- **GPU Optimized**: Mixed precision training (AMP) for 2-3x speedup on NVIDIA GPUs (CUDA 11.8)
 - **Production Ready**: 
   - Automatic OOM handling with batch size reduction
   - Early stopping and learning rate scheduling
@@ -39,8 +48,8 @@ ai-skin-lesion-xai/
 │   ├── metrics.py          # Evaluation metrics
 │   └── utils.py            # Helper functions
 ├── scripts/
-│   ├── create_dummy_data.py    # Generate synthetic test data
-│   └── preprocess_isic.py      # ISIC dataset preprocessing
+│   ├── preprocess_ham10000.py  # HAM10000 dataset preprocessing
+│   └── preprocess_isic.py      # Legacy ISIC preprocessing (optional)
 ├── tests/
 │   ├── test_dataset.py     # Dataset tests
 │   └── test_inference.py   # Inference tests
@@ -68,50 +77,61 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Get Data
+### 2. Get HAM10000 Dataset
 
-#### Option A: Use ISIC Dataset (Recommended)
+**Dataset**: [HAM10000 on Kaggle](https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000)
 
-Download ISIC 2018 or 2020 dataset:
-- ISIC 2018: https://challenge.isic-archive.com/data/#2018
-- ISIC 2020: https://challenge.isic-archive.com/data/#2020
-
-Preprocess the dataset:
+#### Setup Kaggle API:
 
 ```bash
-# Organize ISIC data into train/val/test structure
-python scripts/preprocess_isic.py \
-    --input_dir path/to/ISIC_raw \
-    --output_dir data \
-    --metadata metadata.csv
+# Install Kaggle CLI
+pip install kaggle
+
+# Place your kaggle.json in the correct location:
+# Windows: C:\Users\<username>\.kaggle\kaggle.json
+# Linux/Mac: ~/.kaggle/kaggle.json
+
+# Download from: https://www.kaggle.com/settings -> API -> Create New API Token
 ```
 
-#### Option B: Generate Dummy Data (for testing)
+#### Download and Preprocess:
 
 ```bash
-# Create synthetic data for quick testing
-python scripts/create_dummy_data.py \
-    --output_dir data/dummy \
-    --num_per_class 50 \
-    --split
+# Download HAM10000 dataset (5.2GB)
+kaggle datasets download -d kmader/skin-cancer-mnist-ham10000 -p data/raw --unzip
+
+# Preprocess into train/val/test splits (70%/15%/15%)
+python scripts/preprocess_ham10000.py
+
+# Output: data/ham10000/
+#   ├── train/  (7,020 images)
+#   ├── val/    (1,498 images)
+#   └── test/   (1,497 images)
 ```
+
+**Dataset Stats**:
+- Total: 10,015 dermatoscopic images
+- Resolution: 600x450 to 1024x768 (resized to 224x224)
+- Format: JPG
+- Classes: 7 (nv, mel, bkl, bcc, akiec, vasc, df)
+- Train/Val/Test: 70%/15%/15% stratified split
 
 ### 3. Train the Model
 
 ```bash
-# Train with default settings (optimized for NVIDIA 4050)
-python -m src.train --data_dir data --epochs 20 --batch_size 32
+# Train with default settings (optimized for NVIDIA RTX GPUs)
+python -m src.train --data_dir data/ham10000 --epochs 30 --batch_size 32
 
 # Train with custom settings
 python -m src.train \
-    --data_dir data \
+    --data_dir data/ham10000 \
     --epochs 30 \
     --batch_size 16 \
     --lr 1e-4 \
     --weight_decay 1e-4
 ```
 
-**For NVIDIA 4050 GPU (6GB VRAM):**
+**GPU Recommendations:**
 - Recommended batch size: 16-32
 - Mixed precision enabled automatically
 - Training time: ~30-45 min for 20 epochs (depends on dataset size)
@@ -152,11 +172,11 @@ Open http://localhost:8501 in your browser.
                             ↓
                     [Dropout (p=0.3)]
                             ↓
-                    [Linear (1280→3)]
+                    [Linear (1280→7)]
                             ↓
                       [Softmax]
                             ↓
-          [Benign | Suspicious | Urgent]
+    [akiec | bcc | bkl | df | mel | nv | vasc]
                             ↓
                     [Grad-CAM Layer]
               (Highlights important regions)
@@ -390,14 +410,14 @@ python scripts/preprocess_isic.py \
     --output_dir data
 ```
 
-### 2. Train on Your NVIDIA 4050
+### 2. Train on Your NVIDIA GPU
 
 ```bash
-# Start training (optimized for 4050 6GB VRAM)
+# Start training (optimized for RTX GPUs with CUDA 11.8)
 python -m src.train \
-    --data_dir data \
-    --epochs 20 \
-    --batch_size 16
+    --data_dir data/ham10000 \
+    --epochs 30 \
+    --batch_size 32
 
 # Monitor training with:
 # - Watch the console for real-time metrics
@@ -405,10 +425,11 @@ python -m src.train \
 # - View metrics/confusion_matrix.png after training
 ```
 
-**Recommended settings for 4050:**
-- Batch size: 16-32 (starts at 32, auto-reduces if OOM)
-- Mixed precision: Enabled by default
-- Expected training time: 30-45 minutes for 20 epochs
+**GPU Recommendations:**
+- RTX 4060/4070 (8GB+): Batch size 32-64
+- RTX 4050 (6GB): Batch size 16-24
+- Mixed precision: Enabled by default (AMP)
+- Expected training time: 45-60 minutes for 30 epochs on HAM10000
 
 ### 3. Deploy to Hugging Face Spaces
 

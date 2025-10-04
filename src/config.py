@@ -48,17 +48,43 @@ if USE_CUDA:
 # Data Configuration
 # ============================================================================
 IMAGE_SIZE = 224  # EfficientNet_B0 default input size
-NUM_CLASSES = 3
-CLASS_NAMES = ["Benign", "Suspicious", "Urgent"]
+
+# HAM10000 Dataset: 7-class skin lesion classification
+NUM_CLASSES = 7
+CLASS_NAMES = [
+    "Actinic_keratoses",        # akiec: Pre-cancerous/in-situ carcinoma
+    "Basal_cell_carcinoma",     # bcc: Malignant basal cell carcinoma
+    "Benign_keratosis",         # bkl: Benign keratosis lesions
+    "Dermatofibroma",           # df: Benign dermatofibroma
+    "Melanoma",                 # mel: Malignant melanoma
+    "Melanocytic_nevi",         # nv: Benign moles
+    "Vascular_lesions"          # vasc: Benign vascular lesions
+]
+
+# Short codes for reference
+CLASS_CODES = {
+    "akiec": "Actinic_keratoses",
+    "bcc": "Basal_cell_carcinoma",
+    "bkl": "Benign_keratosis",
+    "df": "Dermatofibroma",
+    "mel": "Melanoma",
+    "nv": "Melanocytic_nevi",
+    "vasc": "Vascular_lesions"
+}
+
+# Dataset information
+DATASET_NAME = "HAM10000"
+DATASET_SOURCE = "https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000"
+DATASET_SIZE = 10015  # Total images
 
 # ImageNet normalization (pretrained model requirement)
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
-# Data split ratios
-TRAIN_SPLIT = 0.8
-VAL_SPLIT = 0.1
-TEST_SPLIT = 0.1
+# Data split ratios (for reference - HAM10000 uses pre-split data)
+TRAIN_RATIO = 0.70  # 70% training
+VAL_RATIO = 0.15    # 15% validation
+TEST_RATIO = 0.15   # 15% test
 
 # ============================================================================
 # Training Hyperparameters
@@ -179,6 +205,7 @@ def print_config() -> None:
     print("=" * 70)
     print("AI SKIN LESION CLASSIFIER - CONFIGURATION")
     print("=" * 70)
+    print(f"Dataset: {DATASET_NAME} ({DATASET_SIZE} images, {NUM_CLASSES} classes)")
     print(f"Device: {DEVICE} ({GPU_NAME})")
     print(f"CUDA Available: {USE_CUDA}")
     print(f"Mixed Precision (AMP): {USE_AMP}")
