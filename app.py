@@ -86,7 +86,9 @@ def create_probability_chart(probabilities: dict):
     
     classes = list(probabilities.keys())
     probs = list(probabilities.values())
-    colors = ['#28a745', '#ffc107', '#dc3545']  # Green, Yellow, Red
+    
+    # Dynamic colors for all classes using tab10 colormap
+    colors = plt.cm.tab10(np.linspace(0, 1, len(probabilities)))
     
     bars = ax.barh(classes, probs, color=colors, alpha=0.7, edgecolor='black', linewidth=1.5)
     
@@ -167,13 +169,21 @@ def main():
         st.markdown("---")
         
         # Class descriptions
-        with st.expander("📊 Class Descriptions"):
+        with st.expander("📊 Class Descriptions (HAM10000)"):
             st.markdown("""
-                **Benign**: Non-cancerous lesion, typically harmless
+                **Melanocytic nevi (nv)**: Common benign moles, ~67% of dataset
                 
-                **Suspicious**: Lesion showing concerning features, requires monitoring
+                **Melanoma (mel)**: Malignant skin cancer, requires immediate treatment
                 
-                **Urgent**: Lesion with high-risk characteristics, requires immediate attention
+                **Benign keratosis (bkl)**: Non-cancerous growths, common in older adults
+                
+                **Basal cell carcinoma (bcc)**: Malignant but rarely metastasizes
+                
+                **Actinic keratoses (akiec)**: Pre-cancerous lesions, requires monitoring
+                
+                **Vascular lesions (vasc)**: Benign blood vessel abnormalities
+                
+                **Dermatofibroma (df)**: Benign fibrous nodules, typically harmless
             """)
         
         # About section
@@ -198,14 +208,17 @@ def main():
             st.markdown("""
                 **Privacy:** Images are processed locally and not stored.
                 
-                **Dataset:** Model trained on ISIC skin lesion dataset
+                **Dataset:** Model trained on HAM10000 dataset (10,015 dermatoscopic images, 7 classes)
                 
                 **Ethical Considerations:**
                 - This tool should augment, not replace, clinical judgment
                 - Model performance may vary across different skin types
                 - Always seek professional medical advice
                 
-                **Citation:** ISIC 2018/2020 Challenge Dataset
+                **Citation:** Tschandl et al., "The HAM10000 dataset, a large collection of 
+                multi-source dermatoscopic images of common pigmented skin lesions" (2018)
+                
+                **Source:** https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000
             """)
     
     # Main content
@@ -273,11 +286,15 @@ def main():
                 predicted_label = result['label']
                 confidence = result['confidence']
                 
-                # Color-code by class
+                # Color-code by class (HAM10000 categories)
                 label_colors = {
-                    'Benign': '#28a745',
-                    'Suspicious': '#ffc107',
-                    'Urgent': '#dc3545'
+                    'Melanocytic_nevi': '#1f77b4',      # Blue (benign, common)
+                    'Melanoma': '#d62728',               # Red (malignant)
+                    'Benign_keratosis': '#2ca02c',       # Green (benign)
+                    'Basal_cell_carcinoma': '#ff7f0e',   # Orange (malignant but less aggressive)
+                    'Actinic_keratoses': '#ffbb00',      # Yellow (pre-cancerous)
+                    'Vascular_lesions': '#9467bd',       # Purple (benign)
+                    'Dermatofibroma': '#8c564b'          # Brown (benign)
                 }
                 color = label_colors.get(predicted_label, '#17a2b8')
                 

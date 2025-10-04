@@ -288,8 +288,16 @@ LEARNING_RATE = 1e-4
 
 # Data
 IMAGE_SIZE = 224
-NUM_CLASSES = 3
-CLASS_NAMES = ["Benign", "Suspicious", "Urgent"]
+NUM_CLASSES = 7
+CLASS_NAMES = [
+    "Melanocytic_nevi",      # nv - benign moles
+    "Melanoma",              # mel - malignant
+    "Benign_keratosis",      # bkl - benign lesions
+    "Basal_cell_carcinoma",  # bcc - malignant
+    "Actinic_keratoses",     # akiec - pre-cancerous
+    "Vascular_lesions",      # vasc - benign
+    "Dermatofibroma"         # df - benign
+]
 
 # Augmentation
 AUGMENTATION_CONFIG = {
@@ -324,24 +332,40 @@ Contributions are welcome! Please:
 
 ---
 
-## 📚 Dataset & Citations
+## 📚 Dataset & Citation
 
-### ISIC Dataset
+### HAM10000 Dataset
 
-This project uses the International Skin Imaging Collaboration (ISIC) dataset:
+This project uses the **HAM10000** (Human Against Machine with 10000 training images) dataset:
 
-- **ISIC 2018**: https://challenge.isic-archive.com/data/#2018
-- **ISIC 2020**: https://challenge.isic-archive.com/data/#2020
+- **Source**: https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000
+- **Size**: 10,015 dermatoscopic images
+- **Classes**: 7 diagnostic categories
+- **Resolution**: 600×450 pixels (resized to 224×224)
+- **Format**: JPEG
+- **License**: CC BY-NC 4.0 (free for academic/research use)
 
 **Citation:**
-```
-@article{codella2019skin,
-  title={Skin lesion analysis toward melanoma detection 2018: A challenge hosted by the international skin imaging collaboration (isic)},
-  author={Codella, Noel CF and Rotemberg, Veronica and Tschandl, Philipp and Celebi, M Emre and Dusza, Stephen W and Gutman, David and Helba, Brian and Kalloo, Aadi and Liopyris, Konstantinos and Marchetti, Michael A and others},
-  journal={arXiv preprint arXiv:1902.03368},
-  year={2019}
+```bibtex
+@article{tschandl2018ham10000,
+  title={The HAM10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions},
+  author={Tschandl, Philipp and Rosendahl, Cliff and Kittler, Harald},
+  journal={Scientific Data},
+  volume={5},
+  pages={180161},
+  year={2018},
+  publisher={Nature Publishing Group}
 }
 ```
+
+**Dataset Distribution:**
+- Melanocytic nevi (nv): 6,705 images (67%)
+- Melanoma (mel): 1,113 images (11%)
+- Benign keratosis (bkl): 1,099 images (11%)
+- Basal cell carcinoma (bcc): 514 images (5%)
+- Actinic keratoses (akiec): 327 images (3%)
+- Vascular lesions (vasc): 142 images (1.4%)
+- Dermatofibroma (df): 115 images (1.1%)
 
 ---
 
