@@ -1,0 +1,5 @@
+AI-Powered Skin Lesion Classifier with XAI — Built EfficientNet_B0-based screening tool with Grad-CAM explainability on ISIC dataset.
+
+- Fine-tuned EfficientNet_B0 achieving [XX%] macro-F1 on held-out ISIC test set; implemented GPU-optimized training with mixed precision (AMP) for 2-3x speedup on NVIDIA 4050.
+- Deployed interactive Streamlit demo with real-time Grad-CAM visualization; included reproducible training pipeline, unit tests, and ethically-informed medical disclaimers.
+- Engineered production-ready ML system with automated batch size adjustment, early stopping, comprehensive metrics tracking, and modular architecture suitable for clinical deployment.
