@@ -10,6 +10,11 @@ A research-grade prototype that classifies dermatoscopic skin lesion images into
 
 Plain Language: You upload a close-up skin lesion image (from a medical dermatoscope). The system predicts which type it might be and highlights the region it used to decide, helping a future doctor-in-the-loop make a more informed judgment.
 
+### Visual Snapshot
+| Architecture | Class Distribution | Grad-CAM Samples |
+|--------------|-------------------|------------------|
+| ![Architecture](docs/images/architecture.png) | ![Class Distribution](docs/images/class_distribution.png) | ![Grad-CAM](docs/images/gradcam_montage.png) |
+
 ---
 ## 2. How It Runs (High-Level Flow)
 1. Image Loaded → resized to 224×224 and normalized (ImageNet stats).
@@ -17,6 +22,12 @@ Plain Language: You upload a close-up skin lesion image (from a medical dermatos
 3. Softmax converts logits to probabilities (calibrated quality assessed via ECE + Brier score).
 4. Grad-CAM generates an attention heatmap overlay for interpretability.
 5. Output bundle: Top class prediction, per-class probabilities, heatmap, latency metrics (for profiling only in this prototype).
+
+Pipeline Illustration:
+
+| Confusion Matrix | Reliability (Calibration) | Training Curves |
+|------------------|---------------------------|-----------------|
+| ![Confusion Matrix](docs/images/confusion_matrix.png) | ![Reliability Diagram](docs/images/reliability.png) | ![Training Curves](docs/images/training_curves.png) |
 
 ---
 ## 3. Resources & Environment
@@ -97,6 +108,12 @@ Interpretation: Overall accuracy is promising early, but melanoma recall is stil
 | Actinic_keratoses | 0.5581 | 0.5333 | 0.5455 |
 | Vascular_lesions | 0.7917 | 0.8636 | 0.8261 |
 | Dermatofibroma | 0.8333 | 0.5000 | 0.6250 |
+
+Visual Metric Summary:
+
+| Per-Class Bars | Latency Profile | Roadmap |
+|-----------------|----------------|---------|
+| ![Per Class Metrics](docs/images/per_class_metrics.png) | ![Latency](docs/images/latency.png) | ![Roadmap](docs/images/roadmap.png) |
 
 ---
 ## 8. Performance Comparison (Future Plan Table Example)
