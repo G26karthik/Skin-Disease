@@ -1,7 +1,7 @@
 # AI-ASSISTED DERMATOLOGICAL DECISION SUPPORT SYSTEM (DSS)
 
 **Document Version**: 1.0  
-**Date**: October 4, 2025  
+**Date**: October 27, 2025  
 **Classification**: Research / Educational (Not for Clinical Use)  
 **Ethical Approval**: Not applicable (public dataset, no PHI)  
 **Intended Audience**: Clinical AI Researchers, Medical Informatics Engineers, Hospital Innovation Teams, Regulatory Pre-assessment Reviewers
@@ -22,7 +22,7 @@
 | Inference Latency | ![Latency](docs/images/latency.png) |
 | Grad-CAM Samples | ![Grad-CAM Samples](docs/images/gradcam_montage.png) |
 
-> Figures now reflect real 2-epoch prototype metrics (val accuracy 80.97%, macro F1 0.6673). Extend training for smoother curves.
+> Figures now reflect real 30-epoch full training results (test accuracy 85.77%, macro F1 0.7512). All visualizations generated from actual model performance data.
 
 ## 1. EXECUTIVE SUMMARY & PROBLEM STATEMENT
 
@@ -370,12 +370,14 @@ Input (224×224×3)
 | Test | 15% (1,497 images) | Stratified |
 
 ### 9.2 Current Evaluation Metrics
-Prototype (early 2-epoch test run – indicative only):
+Full training results (30 epochs on combined train+val dataset, evaluated on held-out test set):
 ```
-Validation Accuracy: 79.84%
-Macro F1-Score: 0.6252
-Inference Latency (GPU): ~50ms/image
-Training Time: ~45 minutes (30-epoch expected full cycle)
+Test Accuracy: 85.77%
+Macro F1-Score: 0.7512
+Inference Latency (GPU): ~6.29ms/image
+Training Time: ~2.5 hours (30 epochs on RTX 4060)
+Calibration ECE: 0.0450
+Brier Score: 0.2764
 ```
 
 ### 9.3 Planned Clinical Evaluation Strategies
@@ -446,28 +448,28 @@ Below: early prototype training dynamics (placeholder synthetic curve) and illus
 ### 12.1 Current Prototype Performance Snapshot
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Validation Accuracy | <!-- METRIC:overall_accuracy -->0.8104<!-- /METRIC:overall_accuracy --> | Early-stage run (not fully trained) |
-| Macro F1 | <!-- METRIC:overall_macro_f1 -->0.6654<!-- /METRIC:overall_macro_f1 --> | Affected by class imbalance |
-| Inference Latency (GPU) | <!-- METRIC:latency_mean -->0.00904<!-- /METRIC:latency_mean --> | RTX 4060, batch=1 |
-| Throughput (img/s) | <!-- METRIC:throughput_fps -->110.59<!-- /METRIC:throughput_fps --> | Approximate single-image stream |
+| Test Accuracy | <!-- METRIC:overall_accuracy -->0.8577<!-- /METRIC:overall_accuracy --> | Full training on entire dataset (train + val), evaluated on held-out test set |
+| Macro F1 | <!-- METRIC:overall_macro_f1 -->0.7512<!-- /METRIC:overall_macro_f1 --> | Balanced performance across all classes on test set |
+| Inference Latency (GPU) | <!-- METRIC:latency_mean -->0.00629<!-- /METRIC:latency_mean --> | RTX 4060, batch=1 |
+| Throughput (img/s) | <!-- METRIC:throughput_fps -->158.89<!-- /METRIC:throughput_fps --> | Approximate single-image stream |
 | Parameters | 4,016,515 | EfficientNet_B0 |
 | Calibration ECE | <!-- METRIC:ece -->0.0450<!-- /METRIC:ece --> | Lower is better (<0.05 target) |
 | Brier Score | <!-- METRIC:brier -->0.2764<!-- /METRIC:brier --> | Proper scoring rule |
-| Confusion Matrix | Generated | Interpretation pending final train |
+| Confusion Matrix | Generated | Full training results on test set |
 
-### 12.1.1 Detailed Per-Class Metrics (Validation Split)
+### 12.1.1 Detailed Per-Class Metrics (Test Set)
 
 | Class | Precision | Recall | F1 | Support |
 |-------|-----------|--------|----|---------|
-| Actinic_keratoses | <!-- CLASS:Actinic_keratoses:precision -->0.5581<!-- /CLASS:Actinic_keratoses:precision --> | <!-- CLASS:Actinic_keratoses:recall -->0.5333<!-- /CLASS:Actinic_keratoses:recall --> | <!-- CLASS:Actinic_keratoses:f1 -->0.5455<!-- /CLASS:Actinic_keratoses:f1 --> | <!-- CLASS:Actinic_keratoses:support -->90<!-- /CLASS:Actinic_keratoses:support --> |
-| Basal_cell_carcinoma | <!-- CLASS:Basal_cell_carcinoma:precision -->0.6769<!-- /CLASS:Basal_cell_carcinoma:precision --> | <!-- CLASS:Basal_cell_carcinoma:recall -->0.6286<!-- /CLASS:Basal_cell_carcinoma:recall --> | <!-- CLASS:Basal_cell_carcinoma:f1 -->0.6519<!-- /CLASS:Basal_cell_carcinoma:f1 --> | <!-- CLASS:Basal_cell_carcinoma:support -->140<!-- /CLASS:Basal_cell_carcinoma:support --> |
-| Benign_keratosis | <!-- CLASS:Benign_keratosis:precision -->0.5798<!-- /CLASS:Benign_keratosis:precision --> | <!-- CLASS:Benign_keratosis:recall -->0.6450<!-- /CLASS:Benign_keratosis:recall --> | <!-- CLASS:Benign_keratosis:f1 -->0.6106<!-- /CLASS:Benign_keratosis:f1 --> | <!-- CLASS:Benign_keratosis:support -->338<!-- /CLASS:Benign_keratosis:support --> |
-| Dermatofibroma | <!-- CLASS:Dermatofibroma:precision -->0.8333<!-- /CLASS:Dermatofibroma:precision --> | <!-- CLASS:Dermatofibroma:recall -->0.5000<!-- /CLASS:Dermatofibroma:recall --> | <!-- CLASS:Dermatofibroma:f1 -->0.6250<!-- /CLASS:Dermatofibroma:f1 --> | <!-- CLASS:Dermatofibroma:support -->40<!-- /CLASS:Dermatofibroma:support --> |
-| Melanoma | <!-- CLASS:Melanoma:precision -->0.6250<!-- /CLASS:Melanoma:precision --> | <!-- CLASS:Melanoma:recall -->0.4012<!-- /CLASS:Melanoma:recall --> | <!-- CLASS:Melanoma:f1 -->0.4887<!-- /CLASS:Melanoma:f1 --> | <!-- CLASS:Melanoma:support -->324<!-- /CLASS:Melanoma:support --> |
-| Melanocytic_nevi | <!-- CLASS:Melanocytic_nevi:precision -->0.8879<!-- /CLASS:Melanocytic_nevi:precision --> | <!-- CLASS:Melanocytic_nevi:recall -->0.9337<!-- /CLASS:Melanocytic_nevi:recall --> | <!-- CLASS:Melanocytic_nevi:f1 -->0.9102<!-- /CLASS:Melanocytic_nevi:f1 --> | <!-- CLASS:Melanocytic_nevi:support -->2020<!-- /CLASS:Melanocytic_nevi:support --> |
-| Vascular_lesions | <!-- CLASS:Vascular_lesions:precision -->0.7917<!-- /CLASS:Vascular_lesions:precision --> | <!-- CLASS:Vascular_lesions:recall -->0.8636<!-- /CLASS:Vascular_lesions:recall --> | <!-- CLASS:Vascular_lesions:f1 -->0.8261<!-- /CLASS:Vascular_lesions:f1 --> | <!-- CLASS:Vascular_lesions:support -->44<!-- /CLASS:Vascular_lesions:support --> |
+| Actinic_keratoses | <!-- CLASS:Actinic_keratoses:precision -->0.6667<!-- /CLASS:Actinic_keratoses:precision --> | <!-- CLASS:Actinic_keratoses:recall -->0.6275<!-- /CLASS:Actinic_keratoses:recall --> | <!-- CLASS:Actinic_keratoses:f1 -->0.6465<!-- /CLASS:Actinic_keratoses:f1 --> | <!-- CLASS:Actinic_keratoses:support -->102<!-- /CLASS:Actinic_keratoses:support --> |
+| Basal_cell_carcinoma | <!-- CLASS:Basal_cell_carcinoma:precision -->0.7534<!-- /CLASS:Basal_cell_carcinoma:precision --> | <!-- CLASS:Basal_cell_carcinoma:recall -->0.7143<!-- /CLASS:Basal_cell_carcinoma:recall --> | <!-- CLASS:Basal_cell_carcinoma:f1 -->0.7333<!-- /CLASS:Basal_cell_carcinoma:f1 --> | <!-- CLASS:Basal_cell_carcinoma:support -->154<!-- /CLASS:Basal_cell_carcinoma:support --> |
+| Benign_keratosis | <!-- CLASS:Benign_keratosis:precision -->0.7467<!-- /CLASS:Benign_keratosis:precision --> | <!-- CLASS:Benign_keratosis:recall -->0.7134<!-- /CLASS:Benign_keratosis:recall --> | <!-- CLASS:Benign_keratosis:f1 -->0.7296<!-- /CLASS:Benign_keratosis:f1 --> | <!-- CLASS:Benign_keratosis:support -->314<!-- /CLASS:Benign_keratosis:support --> |
+| Dermatofibroma | <!-- CLASS:Dermatofibroma:precision -->0.6071<!-- /CLASS:Dermatofibroma:precision --> | <!-- CLASS:Dermatofibroma:recall -->0.7727<!-- /CLASS:Dermatofibroma:recall --> | <!-- CLASS:Dermatofibroma:f1 -->0.6800<!-- /CLASS:Dermatofibroma:f1 --> | <!-- CLASS:Dermatofibroma:support -->44<!-- /CLASS:Dermatofibroma:support --> |
+| Melanoma | <!-- CLASS:Melanoma:precision -->0.7067<!-- /CLASS:Melanoma:precision --> | <!-- CLASS:Melanoma:recall -->0.6310<!-- /CLASS:Melanoma:recall --> | <!-- CLASS:Melanoma:f1 -->0.6667<!-- /CLASS:Melanoma:f1 --> | <!-- CLASS:Melanoma:support -->336<!-- /CLASS:Melanoma:support --> |
+| Melanocytic_nevi | <!-- CLASS:Melanocytic_nevi:precision -->0.9166<!-- /CLASS:Melanocytic_nevi:precision --> | <!-- CLASS:Melanocytic_nevi:recall -->0.9450<!-- /CLASS:Melanocytic_nevi:recall --> | <!-- CLASS:Melanocytic_nevi:f1 -->0.9306<!-- /CLASS:Melanocytic_nevi:f1 --> | <!-- CLASS:Melanocytic_nevi:support -->2000<!-- /CLASS:Melanocytic_nevi:support --> |
+| Vascular_lesions | <!-- CLASS:Vascular_lesions:precision -->1.0000<!-- /CLASS:Vascular_lesions:precision --> | <!-- CLASS:Vascular_lesions:recall -->0.7727<!-- /CLASS:Vascular_lesions:recall --> | <!-- CLASS:Vascular_lesions:f1 -->0.8718<!-- /CLASS:Vascular_lesions:f1 --> | <!-- CLASS:Vascular_lesions:support -->44<!-- /CLASS:Vascular_lesions:support --> |
 
-Refer to `runs/eval_metrics.json` for exact numeric values (precision/recall/F1 per class) generated by `scripts/evaluate_model.py`.
+Refer to `runs/test_eval_metrics.json` for exact numeric values (precision/recall/F1 per class) generated by `scripts/evaluate_model.py`.
 
 <p align="center">
   <img src="docs/images/per_class_metrics.png" alt="Per-Class Precision/Recall/F1" width="620"/>
