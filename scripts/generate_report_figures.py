@@ -274,7 +274,7 @@ def throughput_plot():
     plt.close()
 
 def per_class_metrics_plot():
-    eval_json = BASE / 'runs' / 'eval_metrics.json'
+    eval_json = BASE / 'runs' / 'test_eval_metrics.json'
     if not eval_json.exists():
         return
     with open(eval_json,'r') as f:
