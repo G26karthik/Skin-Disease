@@ -234,19 +234,7 @@ def main():
             help="Upload a clear photo of the skin lesion"
         )
         
-        # Sample images (if available)
-        st.markdown("---")
-        st.subheader("Or try a sample image:")
-        
-        sample_dir = Path("data/sample")
-        if sample_dir.exists():
-            sample_images = list(sample_dir.glob("*.jpg")) + list(sample_dir.glob("*.png"))
-            if sample_images:
-                sample_cols = st.columns(min(3, len(sample_images)))
-                for idx, sample_path in enumerate(sample_images[:3]):
-                    with sample_cols[idx]:
-                        if st.button(f"Sample {idx+1}", key=f"sample_{idx}"):
-                            uploaded_file = sample_path
+        # (Sample image picker removed) — users should upload their own images
     
     with col2:
         st.header("🔍 Results")
