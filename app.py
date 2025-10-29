@@ -49,6 +49,7 @@ st.markdown("""
         padding: 1rem;
         margin: 1rem 0;
         border-radius: 5px;
+        color: #000; /* Force warning text to black for readability */
     }
     .info-box {
         background-color: #d1ecf1;
