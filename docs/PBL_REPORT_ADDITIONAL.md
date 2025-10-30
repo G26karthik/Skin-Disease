@@ -2,9 +2,9 @@
 
 ## Visual Snapshots
 
-- **System Architecture:** ![Architecture](docs/images/architecture.png)
-- **Class Distribution:** ![Class Distribution](docs/images/class_distribution.png)
-- **Grad-CAM Explainability:** ![Grad-CAM Montage](docs/images/gradcam_montage.png)
+- **System Architecture:** ![Architecture](images/architecture.png)
+- **Class Distribution:** ![Class Distribution](images/class_distribution.png)
+- **Grad-CAM Explainability:** ![Grad-CAM Montage](images/gradcam_montage.png)
 
 ---
 
@@ -71,81 +71,96 @@ The system processes an input image as follows:
 - **Loss Function**: CrossEntropyLoss
 - **Hyperparameters**: Learning rate 1e-3, batch size 32, epochs 30, mixed precision (AMP)
 
-#### Sample Code Snippet: Model Creation
+
+#### Real Code Snippet: Model Creation (src/model_builder.py)
 ```python
 import torch.nn as nn
 from torchvision.models import efficientnet_b0
 
-def build_model(num_classes=7):
-    base = efficientnet_b0(pretrained=True)
-    in_features = base.classifier[1].in_features
-    base.classifier[1] = nn.Linear(in_features, num_classes)
-    return base
+class SkinLesionClassifier(nn.Module):
+    def __init__(self, num_classes=7, dropout=0.3):
+        super().__init__()
+        self.backbone = efficientnet_b0(weights="IMAGENET1K_V1")
+        in_features = self.backbone.classifier[1].in_features
+        self.backbone.classifier[1] = nn.Identity()
+        self.head = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(in_features, num_classes)
+        )
+
+    def forward(self, x):
+        features = self.backbone(x)
+        logits = self.head(features)
+        return logits
+
+def build_model(num_classes=7, dropout=0.3):
+    return SkinLesionClassifier(num_classes=num_classes, dropout=dropout)
 ```
 
-#### Sample Code Snippet: Training Loop
+
+#### Real Code Snippet: Training Loop (src/train.py)
 ```python
-for epoch in range(num_epochs):
-    model.train()
-    for images, labels in train_loader:
-        images, labels = images.to(device), labels.to(device)
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-    # Validation and metrics...
+for epoch in range(epochs):
+    train_loss, train_acc = trainer.train_epoch(epoch)
+    val_loss, val_acc, val_f1 = trainer.validate(epoch)
+    # Scheduler, checkpointing, early stopping handled in Trainer class
 ```
 
-#### Sample Code Snippet: Evaluation & Inference
+
+#### Real Code Snippet: Evaluation & Inference (src/train.py)
 ```python
 model.eval()
 with torch.no_grad():
-    for images, labels in test_loader:
+    for images, labels in val_loader:
+        images = images.to(DEVICE, non_blocking=True)
         outputs = model(images)
-        preds = outputs.argmax(1)
-        # Collect metrics...
+        preds = outputs.argmax(1).cpu().numpy().tolist()
+        # Collect metrics, compute confusion matrix, save results
 ```
 
-#### Sample Code Snippet: Data Preprocessing
-```python
-from torchvision import transforms
-from PIL import Image
 
-def preprocess_image(img_path):
-    image = Image.open(img_path).convert('RGB')
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+#### Real Code Snippet: Data Preprocessing (src/dataset.py)
+```python
+from albumentations.pytorch import ToTensorV2
+import albumentations as A
+
+def get_transforms():
+    return A.Compose([
+        A.Resize(224, 224),
+        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2()
     ])
-    return transform(image)
 ```
 
-#### Sample Code Snippet: Grad-CAM Visualization
+
+#### Real Code Snippet: Grad-CAM Visualization (src/gradcam.py)
 ```python
-import torch
-import numpy as np
-from src.gradcam import GradCAM
+class GradCAM:
+    def __init__(self, model, target_layer):
+        self.model = model
+        self.target_layer = target_layer
+        # Register hooks, etc.
 
-def generate_gradcam(model, image_tensor, target_class):
-    gradcam = GradCAM(model, target_layer='features')
-    mask = gradcam(image_tensor.unsqueeze(0), target_class)
-    return np.uint8(255 * mask)
+    def __call__(self, input_tensor, target_class):
+        # Forward pass, backward pass, extract gradients
+        # Generate heatmap mask
+        return mask
 ```
 
-#### Sample Code Snippet: Streamlit Inference UI
+
+#### Real Code Snippet: Streamlit Inference UI (app.py)
 ```python
 import streamlit as st
 from PIL import Image
-import numpy as np
+import torch
+from src.model_builder import build_model
 
 st.header("Skin Lesion Classifier")
 file = st.file_uploader("Upload Image", type=['jpg', 'png'])
 if file:
     image = Image.open(file).convert('RGB')
     st.image(image, caption="Uploaded Image")
-    # Preprocess and predict...
+    # Preprocess, run model, display prediction and Grad-CAM
 ```
 
 ### Result Interpretations
@@ -189,9 +204,9 @@ Future improvements:
 
 ### Performance Visualizations
 
-- **Per-Class Metrics:** ![Per-Class Metrics](docs/images/per_class_metrics.png)
-- **Latency Profile:** ![Latency](docs/images/latency.png)
-- **Project Roadmap:** ![Roadmap](docs/images/roadmap.png)
+- **Per-Class Metrics:** ![Per-Class Metrics](images/per_class_metrics.png)
+- **Latency Profile:** ![Latency](images/latency.png)
+- **Project Roadmap:** ![Roadmap](images/roadmap.png)
 
 ---
 
@@ -216,8 +231,8 @@ Future improvements:
 
 ### Additional Visuals
 
-- **Confusion Matrix (Test Set):** ![Confusion Matrix](docs/images/confusion_matrix.png)
-- **Reliability Diagram (Calibration):** ![Reliability](docs/images/reliability.png)
-- **Training Curves:** ![Training Curves](docs/images/training_curves.png)
+- **Confusion Matrix (Test Set):** ![Confusion Matrix](images/confusion_matrix.png)
+- **Reliability Diagram (Calibration):** ![Reliability](images/reliability.png)
+- **Training Curves:** ![Training Curves](images/training_curves.png)
 
 ---
