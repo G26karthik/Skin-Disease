@@ -2,9 +2,9 @@
 
 ## Visual Snapshots
 
-- **System Architecture:** ![Architecture](../images/architecture.png)
-- **Class Distribution:** ![Class Distribution](../images/class_distribution.png)
-- **Grad-CAM Explainability:** ![Grad-CAM Montage](../images/gradcam_montage.png)
+- **System Architecture:** ![Architecture](docs/images/architecture.png)
+- **Class Distribution:** ![Class Distribution](docs/images/class_distribution.png)
+- **Grad-CAM Explainability:** ![Grad-CAM Montage](docs/images/gradcam_montage.png)
 
 ---
 
@@ -107,6 +107,47 @@ with torch.no_grad():
         # Collect metrics...
 ```
 
+#### Sample Code Snippet: Data Preprocessing
+```python
+from torchvision import transforms
+from PIL import Image
+
+def preprocess_image(img_path):
+    image = Image.open(img_path).convert('RGB')
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    return transform(image)
+```
+
+#### Sample Code Snippet: Grad-CAM Visualization
+```python
+import torch
+import numpy as np
+from src.gradcam import GradCAM
+
+def generate_gradcam(model, image_tensor, target_class):
+    gradcam = GradCAM(model, target_layer='features')
+    mask = gradcam(image_tensor.unsqueeze(0), target_class)
+    return np.uint8(255 * mask)
+```
+
+#### Sample Code Snippet: Streamlit Inference UI
+```python
+import streamlit as st
+from PIL import Image
+import numpy as np
+
+st.header("Skin Lesion Classifier")
+file = st.file_uploader("Upload Image", type=['jpg', 'png'])
+if file:
+    image = Image.open(file).convert('RGB')
+    st.image(image, caption="Uploaded Image")
+    # Preprocess and predict...
+```
+
 ### Result Interpretations
 - **Accuracy & Loss Curves**: Training and validation accuracy steadily increased over 30 epochs, with validation accuracy plateauing near 85.8%. Loss decreased consistently, indicating stable learning and no overfitting.
 - **Confusion Matrix**: The normalized confusion matrix shows strong diagonal dominance, with highest accuracy for Melanocytic nevi and lower recall for Melanoma, reflecting clinical challenges in minority class detection.
@@ -148,9 +189,9 @@ Future improvements:
 
 ### Performance Visualizations
 
-- **Per-Class Metrics:** ![Per-Class Metrics](../images/per_class_metrics.png)
-- **Latency Profile:** ![Latency](../images/latency.png)
-- **Project Roadmap:** ![Roadmap](../images/roadmap.png)
+- **Per-Class Metrics:** ![Per-Class Metrics](docs/images/per_class_metrics.png)
+- **Latency Profile:** ![Latency](docs/images/latency.png)
+- **Project Roadmap:** ![Roadmap](docs/images/roadmap.png)
 
 ---
 
@@ -175,8 +216,8 @@ Future improvements:
 
 ### Additional Visuals
 
-- **Confusion Matrix (Test Set):** ![Confusion Matrix](../images/confusion_matrix.png)
-- **Reliability Diagram (Calibration):** ![Reliability](../images/reliability.png)
-- **Training Curves:** ![Training Curves](../images/training_curves.png)
+- **Confusion Matrix (Test Set):** ![Confusion Matrix](docs/images/confusion_matrix.png)
+- **Reliability Diagram (Calibration):** ![Reliability](docs/images/reliability.png)
+- **Training Curves:** ![Training Curves](docs/images/training_curves.png)
 
 ---
